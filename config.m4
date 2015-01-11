@@ -21,11 +21,11 @@ if test "$PHP_SASS" != "no"; then
 	done
 
 	if test -z "$LIBSASS_INCDIR"; then
-		AC_MSG_ERROR(Cannot find libsass!)
+		AC_MSG_ERROR(Cannot find libsass at /usr/local or /opt/local !)
 	fi
 
 	if test -z "$LIBSASS_LD_DIR"; then
-		AC_MSG_ERROR(Cannot find libsass.a!)
+		AC_MSG_ERROR(Cannot find libsass.a at /usr/lib, /usr/local/lib or /opt/local/lib !)
 	fi
 
 	PHP_ADD_LIBRARY_WITH_PATH(sass, $LIBSASS_LD_DIR, LIBSASS_SHARED_LIBADD)

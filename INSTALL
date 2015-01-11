@@ -1,0 +1,40 @@
+PHP-SASS
+========
+
+Dependencies
+------------
+
+LibSass: The master branch
+*nix: Only support *unix for now (Linux or OS X)
+
+Install
+-------
+
+1. Download libsass
+
+You can clone it at [here](https://github.com/sass/libsass.git) -> https://github.com/sass/libsass.git
+Put it in /usr/local/src or /opt/local/src (The ports location)
+
+If you want to put it somewhere else, pleace set it as the environment variable PHP_SASS
+
+2. Compile and Install libsass
+
+Compile and install libsass
+
+cd [libsass sourcecode location] && aclocal && autoconf && automake --add-missing && ./confiugre && make && sudo make install
+
+3. Run the PHP automake
+
+cd [php-sass sourcecode location] && phpize && ./configure && make && sudo make install
+
+4. Add the php configuration
+
+Add sass.ini of contents
+
+	extension=sass.so
+
+Into the php's configuration folder.
+
+And you are done.
+
+Simple, isn't it? ;)
