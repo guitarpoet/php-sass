@@ -1,5 +1,15 @@
 #include "sass_options.h"
 
+struct Sass_Import** sass_php_importer(const char* url, const char* prev, void* cookie) {
+	printf("url %s pref %s\n", url, prev);
+	struct Sass_Import** list = sass_make_import_list(2);
+	const char* local = "local { color: green; }";
+	const char* remote = "remote { color: red; }";
+	list[0] = sass_make_import_entry("/tmp/styles.scss", strdup(local), 0);
+	list[1] = sass_make_import_entry("http://www.example.com", strdup(remote), 0);
+	return list;
+}
+
 void sass_report_error(const char* s_error) {
 	zend_throw_exception(zend_exception_get_default(TSRMLS_C), s_error, 0 TSRMLS_CC);
 }
@@ -291,6 +301,9 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	Sass_C_Function_List fn_list = sass_make_function_list(1);
 	sass_function_set_list_entry(fn_list, 0, fn_php);
 	sass_option_set_c_functions(pso_options, fn_list);
+
+	// Adding the php stream importers
+	// sass_option_set_importer(pso_options, sass_make_importer(sass_php_importer, NULL));
 }
 
 /**

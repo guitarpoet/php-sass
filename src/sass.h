@@ -9,6 +9,7 @@
 #define PHP_SASS_EXTNAME "sass"
 
 #include <stdio.h>
+#include <string.h>
 #include <php.h>
 #include <Zend/zend_exceptions.h>
 #include <ext/standard/php_array.h>
