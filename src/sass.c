@@ -1,5 +1,260 @@
 #include "sass_options.h"
 
+void sass_report_error(const char* s_error) {
+	zend_throw_exception(zend_exception_get_default(TSRMLS_C), s_error, 0 TSRMLS_CC);
+}
+
+void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg) {
+	if(sass_value_is_null(psv_arg)) {
+		ZVAL_NULL(pzv_arg);
+	}
+	else if (sass_value_is_number(psv_arg)) {
+		ZVAL_DOUBLE(pzv_arg, sass_number_get_value(psv_arg));
+	}
+	else if (sass_value_is_string(psv_arg)) {
+		ZVAL_STRING(pzv_arg, sass_string_get_value(psv_arg), true);
+	}
+	else if (sass_value_is_boolean(psv_arg)) {
+		if(sass_boolean_get_value(psv_arg)) {
+			ZVAL_TRUE(pzv_arg);
+		}
+		else {
+			ZVAL_FALSE(pzv_arg);
+		}
+	}
+	else if (sass_value_is_color(psv_arg)) {
+		char color[24];
+		snprintf(color, sizeof color, "#%.2x%.2x%.2x", 
+			(int)sass_color_get_r(psv_arg), 
+			(int)sass_color_get_g(psv_arg), 
+			(int)sass_color_get_b(psv_arg));
+		ZVAL_STRING(pzv_arg, color, true);
+	}
+	else if (sass_value_is_list(psv_arg)) {
+
+		size_t count = sass_list_get_length(psv_arg);
+
+		// Initlialize the php arg as an array
+		array_init_size(pzv_arg, count);
+
+		int i;
+		
+		for(i = 0; i < count; i++) {
+			zval* pzv_array_item = NULL;
+			MAKE_STD_ZVAL(pzv_array_item);
+
+			// Conver the list item to php
+			sass_to_php(sass_list_get_value(psv_arg, i), pzv_array_item);
+
+			// Add the array item to the array
+			add_next_index_zval(pzv_arg, pzv_array_item);
+		}
+	}
+	else if (sass_value_is_map(psv_arg)) {
+		size_t count = sass_map_get_length(psv_arg);
+
+		// Initlialize the php arg as an array
+		array_init_size(pzv_arg, count);
+
+		int i;
+		
+		for(i = 0; i < count; i++) {
+			zval* pzv_array_item = NULL;
+			MAKE_STD_ZVAL(pzv_array_item);
+
+			// Conver the list item to php
+			sass_to_php(sass_map_get_value(psv_arg, i), pzv_array_item);
+
+			// Add the array item to the array
+			add_assoc_zval(pzv_arg, sass_string_get_value(sass_map_get_key(psv_arg, i)), pzv_array_item);
+		}
+	}
+}
+
+union Sass_Value* convert_php_to_list(zval* pzv_val) {
+	int count = php_count_recursive(pzv_val, COUNT_NORMAL);
+	union Sass_Value** values = emalloc(count * sizeof(union Sass_Value*));
+
+	HashTable* ht = Z_ARRVAL_P(pzv_val);
+	HashPosition position;
+	zval **data = NULL;
+
+	int real_count = 0;
+	// Iterating all the key and values in the context
+	for (zend_hash_internal_pointer_reset_ex(ht, &position);
+		 zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
+		 zend_hash_move_forward_ex(ht, &position)) {
+
+		 char *key = NULL;
+		 uint  klen;
+		 ulong index;
+
+		 // Only require the string key, all the index key will be ignored
+		 if (zend_hash_get_current_key_ex(ht, &key, &klen, &index, 0, &position) == HASH_KEY_IS_LONG) {
+			 values[real_count] = php_to_sass(*data);
+			 real_count++;
+		 }
+	}
+
+	// Create the map
+	union Sass_Value* psv_list = sass_make_list(real_count, SASS_SPACE);
+
+	int i;
+	for(i = 0; i < real_count; i++) {
+		sass_list_set_value(psv_list, i, values[i]);
+	}
+
+	efree(values);
+
+	return psv_list;
+}
+
+union Sass_Value* convert_php_to_map(zval* pzv_val) {
+	int count = php_count_recursive(pzv_val, COUNT_NORMAL);
+	const char** keys = emalloc(count * sizeof(const char*));
+	union Sass_Value** values = emalloc(count * sizeof(union Sass_Value*));
+
+	HashTable* ht = Z_OBJPROP_P(pzv_val);
+	HashPosition position;
+	zval **data = NULL;
+
+	int real_count = 0;
+	// Iterating all the key and values in the context
+	for (zend_hash_internal_pointer_reset_ex(ht, &position);
+		 zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
+		 zend_hash_move_forward_ex(ht, &position)) {
+
+		 char *key = NULL;
+		 uint  klen;
+		 ulong index;
+
+		 // Only require the string key, all the index key will be ignored
+		 if (zend_hash_get_current_key_ex(ht, &key, &klen, &index, 0, &position) == HASH_KEY_IS_STRING) {
+			 keys[real_count] = key;
+			 values[real_count] = php_to_sass(*data);
+			 real_count++;
+		 }
+	}
+
+	// Create the map
+	union Sass_Value* psv_map = sass_make_map(real_count);
+
+	int i;
+	for(i = 0; i < real_count; i++) {
+		sass_map_set_key(psv_map, i, sass_make_string(keys[i]));
+		sass_map_set_value(psv_map, i, values[i]);
+	}
+
+	efree(keys);
+	efree(values);
+
+	return psv_map;
+}
+
+union Sass_Value* php_to_sass(zval* pzv_arg) {
+	switch(Z_TYPE_P(pzv_arg)) {
+	case IS_LONG:
+		return sass_make_number(Z_LVAL_P(pzv_arg), "px");
+	case IS_DOUBLE:
+		return sass_make_number(Z_DVAL_P(pzv_arg), "px");
+	case IS_BOOL:
+		return sass_make_boolean(Z_BVAL_P(pzv_arg));
+	case IS_ARRAY:
+		// Will treat array as list and object as map
+		return convert_php_to_list(pzv_arg);
+	case IS_OBJECT:
+		return convert_php_to_map(pzv_arg);
+	case IS_STRING:
+		return sass_make_string(Z_STRVAL_P(pzv_arg));
+	}
+	return sass_make_null();
+}
+
+union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_args) {
+	size_t args_count = sass_list_get_length(psv_args) - 1; // Skip the first arg of function name
+
+	// Copy the function name to php variable
+    zval* pzv_function_name = NULL;
+    MAKE_STD_ZVAL(pzv_function_name);
+    ZVAL_STRING(pzv_function_name, s_func, true);
+
+    zend_uint argc = sass_list_get_length(psv_args) - 1;
+
+    // Initialize the paramter array
+    zval** ppzv_params = (zval**) emalloc(argc * sizeof(zval*));
+    zval *pzv_php_ret_val = NULL;
+
+	// Initialize the return php value
+	MAKE_STD_ZVAL(pzv_php_ret_val);
+
+	int i;
+	// Setup the input parameters
+	for(i = 0; i < argc; i++) {
+		// Initialize the php value
+		zval* pzv_val = NULL;
+		MAKE_STD_ZVAL(pzv_val);
+
+		// Getting sass value
+		union Sass_Value* psv_val = sass_list_get_value(psv_args, i + 1);
+		
+		// Convert it to php
+		sass_to_php(psv_val, pzv_val);
+
+		// Adding it to the php args
+		ppzv_params[i] = pzv_val;
+	}
+
+	union Sass_Value* psv_ret = NULL;
+
+    if (call_user_function(EG(function_table), NULL, pzv_function_name, pzv_php_ret_val, argc, ppzv_params TSRMLS_CC) == SUCCESS) {
+		psv_ret = php_to_sass(pzv_php_ret_val);
+	}
+
+    // Destroy all the php parameter variables
+    for(i = 0; i < argc; i++) {
+		zval_ptr_dtor(&ppzv_params[i]);
+    }
+
+	// Free the args list
+    efree(ppzv_params);
+
+    // Destroy the php return variable
+    zval_ptr_dtor(&pzv_php_ret_val);
+
+    // Destroy the php function name variable
+    zval_ptr_dtor(&pzv_function_name);
+
+	if(psv_ret)
+		return psv_ret;
+
+	char buff[256];
+	sprintf(buff, "Failed to call php function %s!", s_func);
+	sass_report_error(buff);
+	return NULL;
+}
+
+union Sass_Value* call_fn_php(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_value_is_list(psv_args)) {
+		const union Sass_Value* psv_params = psv_args;
+		union Sass_Value* psv_func = sass_list_get_value(psv_args, 0);
+
+		if(sass_value_is_list(psv_func)) {
+			psv_params = psv_func;
+			psv_func = sass_list_get_value(psv_func, 0);
+		}
+
+		if(sass_value_is_string(psv_func)) {
+			union Sass_Value* v = sass_php_call(sass_string_get_value(psv_func), psv_params);
+			if(v)
+				return v;
+		}
+		else {
+			sass_report_error("The first argument must be function name.");
+		}
+	}
+	return sass_make_null();
+}
+
 /**
  * Set all the options in the php hashtable and set them into Sass options.
  *
@@ -12,7 +267,6 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
     HashPosition position;
     zval **data = NULL;
 
-    bool found = false;
     // Iterating all the key and values in the context
     for (zend_hash_internal_pointer_reset_ex(ht, &position);
          zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
@@ -26,6 +280,17 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 			 sass_set_option(pso_options, key, *data);
          }
     }
+
+
+	// Adding the extend functions.
+	
+	// allocate a custom function caller
+	Sass_C_Function_Callback fn_php = sass_make_function("php($func...)", call_fn_php, NULL);
+
+	// create list of all custom functions
+	Sass_C_Function_List fn_list = sass_make_function_list(1);
+	sass_function_set_list_entry(fn_list, 0, fn_php);
+	sass_option_set_c_functions(pso_options, fn_list);
 }
 
 /**
