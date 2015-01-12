@@ -121,8 +121,8 @@ union Sass_Value* convert_php_to_list(zval* pzv_val) {
 
 union Sass_Value* convert_php_to_map(zval* pzv_val) {
 	int count = php_count_recursive(pzv_val, COUNT_NORMAL);
-	const char** keys = emalloc(count * sizeof(const char*));
-	union Sass_Value** values = emalloc(count * sizeof(union Sass_Value*));
+	const char** keys = emalloc((count + 1) * sizeof(const char*));
+	union Sass_Value** values = emalloc((count + 1) * sizeof(union Sass_Value*));
 
 	HashTable* ht = Z_OBJPROP_P(pzv_val);
 	HashPosition position;
