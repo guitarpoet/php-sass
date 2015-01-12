@@ -11,8 +11,9 @@ struct Sass_Import** sass_php_importer(const char* url, const char* prev, void* 
 	return list;
 }
 
-void sass_report_error(const char* s_error) {
+union Sass_Value* sass_report_error(const char* s_error) {
 	zend_throw_exception(zend_exception_get_default(TSRMLS_C), s_error, 0 TSRMLS_CC);
+	return sass_make_error(s_error);
 }
 
 void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg) {
@@ -165,9 +166,9 @@ union Sass_Value* convert_php_to_map(zval* pzv_val) {
 union Sass_Value* php_to_sass(zval* pzv_arg) {
 	switch(Z_TYPE_P(pzv_arg)) {
 	case IS_LONG:
-		return sass_make_number(Z_LVAL_P(pzv_arg), "px");
+		return sass_make_number(Z_LVAL_P(pzv_arg), "");
 	case IS_DOUBLE:
-		return sass_make_number(Z_DVAL_P(pzv_arg), "px");
+		return sass_make_number(Z_DVAL_P(pzv_arg), "");
 	case IS_BOOL:
 		return sass_make_boolean(Z_BVAL_P(pzv_arg));
 	case IS_ARRAY:
@@ -240,8 +241,7 @@ union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_
 
 	char buff[256];
 	sprintf(buff, "Failed to call php function %s!", s_func);
-	sass_report_error(buff);
-	return NULL;
+	return sass_report_error(buff);
 }
 
 /**

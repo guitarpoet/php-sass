@@ -55,15 +55,14 @@ union Sass_Value* call_fn_str_get(const union Sass_Value* psv_args, void* cookie
 				}
 			}
 			else {
-				sass_report_error("Argument 1 in str-get must be string!");
+				return sass_report_error("Argument 1 in str-get must be string!");
 			}
 		}
 		else {
-			sass_report_error("Argument 2 in str-get must be number!");
+			return sass_report_error("Argument 2 in str-get must be number!");
 		}
 	}
-	sass_report_error("Must have 2 variables in str-get function call!");
-	return sass_make_null();
+	return sass_report_error("Must have 2 variables in str-get function call!");
 }
 
 union Sass_Value* call_fn_php(const union Sass_Value* psv_args, void* cookie) {
@@ -74,29 +73,32 @@ union Sass_Value* call_fn_php(const union Sass_Value* psv_args, void* cookie) {
 		if(sass_value_is_list(psv_func)) {
 			psv_params = psv_func;
 			psv_func = sass_list_get_value(psv_func, 0);
-		}
-
-		if(sass_value_is_string(psv_func)) {
-			union Sass_Value* v = sass_php_call(sass_string_get_value(psv_func), psv_params);
-			if(v)
-				return v;
-		}
-		else {
-			sass_report_error("The first argument must be function name.");
+			if(sass_value_is_string(psv_func)) {
+				union Sass_Value* v = sass_php_call(sass_string_get_value(psv_func), psv_params);
+				if(v)
+					return v;
+			}
+			return sass_report_error("The first argument must be function name!");
 		}
 	}
-	return sass_make_null();
+	return sass_report_error("Call php failed!");
 }
 
 union Sass_Value* call_fn_pow(const union Sass_Value* psv_args, void* cookie) {
 	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 2) {
 		union Sass_Value* psv_i = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_n = sass_list_get_value(psv_args, 1);
-		double i = sass_number_get_value(psv_i);
-		double n = sass_number_get_value(psv_n);
-		return sass_make_number(pow(i, n), sass_number_get_unit(psv_i));
+		if(sass_value_is_number(psv_i)) {
+			if(sass_value_is_number(psv_n)) {
+				double i = sass_number_get_value(psv_i);
+				double n = sass_number_get_value(psv_n);
+				return sass_make_number(pow(i, n), sass_number_get_unit(psv_i));
+			}
+			return sass_report_error("Argument 2 in pow must be number!");
+		}
+		return sass_report_error("Argument 1 in pow must be number!");
 	}
-	return sass_make_null();
+	return sass_report_error("Must have 2 variables in pow function call!");
 }
 
 union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, void* cookie) {
@@ -121,19 +123,18 @@ union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, void* coo
 					return psv_ret;
 				}
 				else {
-					sass_report_error("N must bigger than 0 and smaller than or equals to list's length");
+					return sass_report_error("N must bigger than 0 and smaller than or equals to list's length");
 				}
 			}
 			else {
-				sass_report_error("Argument 2 in remove-nth must be number!");
+				return sass_report_error("Argument 2 in remove-nth must be number!");
 			}
 		}
 		else {
-			sass_report_error("Argument 1 in remove-nth must be list!");
+			return sass_report_error("Argument 1 in remove-nth must be list!");
 		}
 	}
-	sass_report_error("Must have 2 variables in remove-nth function call!");
-	return sass_make_null();
+	return sass_report_error("Must have 2 variables in remove-nth function call!");
 }
 
 union Sass_Value* call_fn_gettype(const union Sass_Value* psv_args, void* cookie) {
@@ -161,6 +162,5 @@ union Sass_Value* call_fn_gettype(const union Sass_Value* psv_args, void* cookie
 			return sass_make_string("map");
 		}
 	}
-	sass_report_error("Must have only 1 variable in gettype function call!");
-	return sass_make_null();
+	return sass_report_error("Must have only 1 variable in gettype function call!");
 }

@@ -22,7 +22,7 @@
 
 const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* psv_error);
 union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_args);
-void sass_report_error(const char* s_error);
+union Sass_Value* sass_report_error(const char* s_error);
 void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg);
 union Sass_Value* php_to_sass(zval* pzv_arg);
 union Sass_Value* sass_dup_value(union Sass_Value* psv_v);
