@@ -1,5 +1,21 @@
 #include "sass_functions.h"
 
+union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 1) {
+		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
+		if(sass_value_is_list(psv_list)) {
+			int l = sass_list_get_length(psv_list);
+			if(l) {
+				return sass_dup_value(sass_list_get_value(psv_list, l - 1));
+			}
+			return sass_report_error("List is empty!");
+		}
+		return sass_report_error("Argument 1 in list-end must be list!");
+		
+	}
+	return sass_report_error("Must have only 1 variables in list-end function call!");
+}
+
 union Sass_Value* sass_dup_value(union Sass_Value* psv_v) {
 	if(sass_value_is_null(psv_v)) {
 		return sass_make_null();

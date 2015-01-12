@@ -2,7 +2,6 @@
 #include "sass_functions.h"
 
 struct Sass_Import** sass_php_importer(const char* url, const char* prev, void* cookie) {
-	printf("url %s pref %s\n", url, prev);
 	struct Sass_Import** list = sass_make_import_list(2);
 	const char* local = "local { color: green; }";
 	const char* remote = "remote { color: red; }";
@@ -279,14 +278,16 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	Sass_C_Function_Callback fn_pow = sass_make_function("pow($i, $n)", call_fn_pow, NULL);
 	Sass_C_Function_Callback fn_gettype = sass_make_function("gettype($i)", call_fn_gettype, NULL);
 	Sass_C_Function_Callback fn_remove_nth = sass_make_function("remove-nth($l, $i)", call_fn_remove_nth, NULL);
+	Sass_C_Function_Callback fn_list_end = sass_make_function("list-end($i)", call_fn_list_end, NULL);
 
 	// create list of all custom functions
-	Sass_C_Function_List fn_list = sass_make_function_list(4);
+	Sass_C_Function_List fn_list = sass_make_function_list(6);
 	sass_function_set_list_entry(fn_list, 0, fn_php);
 	sass_function_set_list_entry(fn_list, 1, fn_str_get);
 	sass_function_set_list_entry(fn_list, 2, fn_pow);
 	sass_function_set_list_entry(fn_list, 3, fn_gettype);
 	sass_function_set_list_entry(fn_list, 4, fn_remove_nth);
+	sass_function_set_list_entry(fn_list, 5, fn_list_end);
 	sass_option_set_c_functions(pso_options, fn_list);
 
 	// Adding the php stream importers
