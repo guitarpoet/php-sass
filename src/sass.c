@@ -1,4 +1,5 @@
 #include "sass_options.h"
+#include "sass_functions.h"
 
 struct Sass_Import** sass_php_importer(const char* url, const char* prev, void* cookie) {
 	printf("url %s pref %s\n", url, prev);
@@ -83,7 +84,7 @@ void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg) {
 
 union Sass_Value* convert_php_to_list(zval* pzv_val) {
 	int count = php_count_recursive(pzv_val, COUNT_NORMAL);
-	union Sass_Value** values = emalloc(count * sizeof(union Sass_Value*));
+	union Sass_Value** values = safe_emalloc(sizeof(union Sass_Value*), count, 0);
 
 	HashTable* ht = Z_ARRVAL_P(pzv_val);
 	HashPosition position;
@@ -243,28 +244,6 @@ union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_
 	return NULL;
 }
 
-union Sass_Value* call_fn_php(const union Sass_Value* psv_args, void* cookie) {
-	if(sass_value_is_list(psv_args)) {
-		const union Sass_Value* psv_params = psv_args;
-		union Sass_Value* psv_func = sass_list_get_value(psv_args, 0);
-
-		if(sass_value_is_list(psv_func)) {
-			psv_params = psv_func;
-			psv_func = sass_list_get_value(psv_func, 0);
-		}
-
-		if(sass_value_is_string(psv_func)) {
-			union Sass_Value* v = sass_php_call(sass_string_get_value(psv_func), psv_params);
-			if(v)
-				return v;
-		}
-		else {
-			sass_report_error("The first argument must be function name.");
-		}
-	}
-	return sass_make_null();
-}
-
 /**
  * Set all the options in the php hashtable and set them into Sass options.
  *
@@ -296,10 +275,18 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	
 	// allocate a custom function caller
 	Sass_C_Function_Callback fn_php = sass_make_function("php($func...)", call_fn_php, NULL);
+	Sass_C_Function_Callback fn_str_get = sass_make_function("str-get($str, $index)", call_fn_str_get, NULL);
+	Sass_C_Function_Callback fn_pow = sass_make_function("pow($i, $n)", call_fn_pow, NULL);
+	Sass_C_Function_Callback fn_gettype = sass_make_function("gettype($i)", call_fn_gettype, NULL);
+	Sass_C_Function_Callback fn_remove_nth = sass_make_function("remove-nth($l, $i)", call_fn_remove_nth, NULL);
 
 	// create list of all custom functions
-	Sass_C_Function_List fn_list = sass_make_function_list(1);
+	Sass_C_Function_List fn_list = sass_make_function_list(4);
 	sass_function_set_list_entry(fn_list, 0, fn_php);
+	sass_function_set_list_entry(fn_list, 1, fn_str_get);
+	sass_function_set_list_entry(fn_list, 2, fn_pow);
+	sass_function_set_list_entry(fn_list, 3, fn_gettype);
+	sass_function_set_list_entry(fn_list, 4, fn_remove_nth);
 	sass_option_set_c_functions(pso_options, fn_list);
 
 	// Adding the php stream importers
