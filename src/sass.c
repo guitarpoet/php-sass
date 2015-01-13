@@ -1,6 +1,20 @@
 #include "sass_options.h"
 #include "sass_functions.h"
 
+int sass_php_count(HashTable* ht) {
+	HashPosition position;
+	zval **data = NULL;
+
+	int count = 0;
+	// Iterating all the key and values in the context
+	for (zend_hash_internal_pointer_reset_ex(ht, &position);
+		 zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
+		 zend_hash_move_forward_ex(ht, &position)) {
+		 count++;
+	}
+	return count;
+}
+
 struct Sass_Import** sass_php_importer(const char* url, const char* prev, void* cookie) {
 	struct Sass_Import** list = sass_make_import_list(2);
 	const char* local = "local { color: green; }";
@@ -83,7 +97,7 @@ void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg) {
 }
 
 union Sass_Value* convert_php_to_list(zval* pzv_val) {
-	int count = php_count_recursive(pzv_val, COUNT_NORMAL);
+	int count = sass_php_count(Z_ARRVAL_P(pzv_val));
 	union Sass_Value** values = safe_emalloc(sizeof(union Sass_Value*), count, 0);
 
 	HashTable* ht = Z_ARRVAL_P(pzv_val);
@@ -121,7 +135,7 @@ union Sass_Value* convert_php_to_list(zval* pzv_val) {
 }
 
 union Sass_Value* convert_php_to_map(zval* pzv_val) {
-	int count = php_count_recursive(pzv_val, COUNT_NORMAL);
+	int count = sass_php_count(Z_OBJPROP_P(pzv_val));
 	const char** keys = emalloc((count + 1) * sizeof(const char*));
 	union Sass_Value** values = emalloc((count + 1) * sizeof(union Sass_Value*));
 
