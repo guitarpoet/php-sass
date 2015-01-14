@@ -1,5 +1,107 @@
 #include "sass_functions.h"
 
+union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 4) {
+		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
+		if(sass_value_is_list(psv_list)) {
+			union Sass_Value* psv_offset = sass_list_get_value(psv_args, 1);
+			if(sass_value_is_number(psv_offset)) {
+				union Sass_Value* psv_count = sass_list_get_value(psv_args, 2);
+				int l = sass_list_get_length(psv_list);
+				int c = sass_number_get_value(psv_count);
+				int offset = sass_number_get_value(psv_offset);
+
+				int left = l - c;
+				if(left < 0) {
+					char buf[1024];
+					sprintf(buf, "The first list's length %d is not long enough than the count %d!", l, c);
+					return sass_report_error(buf);
+				}
+
+				if(offset < 0)
+					offset += l;
+
+				if(offset < 0)
+					return sass_report_error("The first's length is not long enough than the minus offset!");
+
+				union Sass_Value* psv_ret = NULL;
+				int i;
+				int j = 0;
+
+				if(sass_value_is_number(psv_count)) {
+					union Sass_Value* psv_list_append = sass_list_get_value(psv_args, 3);
+					if(sass_value_is_list(psv_list_append)) {
+						int l2 = sass_list_get_length(psv_list_append);
+
+						psv_ret = sass_make_list(left + l2, sass_list_get_separator(psv_list));
+
+						for(i = 0; i < l + l2; i++) {
+							union Sass_Value* psv_v = NULL;
+							if(i < offset) {
+								psv_v = sass_list_get_value(psv_list, i);
+							}
+							else if(i >= offset && i < offset + c) {
+								continue;
+							}
+							else if(i >= offset + c && i < l2 + offset + c) {
+								psv_v = sass_list_get_value(psv_list_append, i - offset - c);
+							}
+							else {
+								psv_v = sass_list_get_value(psv_list, i - l2);
+							}
+							sass_list_set_value(psv_ret, j++, sass_dup_value(psv_v));
+						}
+						return psv_ret;
+					}
+					else {
+						if(sass_value_is_null(psv_list_append)) {
+							psv_ret = sass_make_list(left, sass_list_get_separator(psv_list));
+							for(i = 0; i < l; i++) {
+								union Sass_Value* psv_v = NULL;
+								if(i < offset) {
+									psv_v = sass_list_get_value(psv_list, i);
+								}
+								else if(i >= offset && i < offset + c) {
+									continue;
+								}
+								else {
+									psv_v = sass_list_get_value(psv_list, i);
+								}
+								sass_list_set_value(psv_ret, j++, sass_dup_value(psv_v));
+							}
+							return psv_ret;
+						}
+						else {
+							psv_ret = sass_make_list(left + 1, sass_list_get_separator(psv_list));
+							for(i = 0; i < l + 1; i++) {
+								union Sass_Value* psv_v = NULL;
+								if(i < offset) {
+									psv_v = sass_list_get_value(psv_list, i);
+								}
+								else if(i >= offset && i < offset + c) {
+									continue;
+								}
+								else if(i == offset + c) {
+									psv_v = psv_list_append;
+								}
+								else {
+									psv_v = sass_list_get_value(psv_list, i - 1);
+								}
+								sass_list_set_value(psv_ret, j++, sass_dup_value(psv_v));
+							}
+							return psv_ret;
+						}
+					}
+				}
+				return sass_report_error("Argument 3 in list-splice must be number!");
+			}
+			return sass_report_error("Argument 2 in list-splice must be number!");
+		}
+		return sass_report_error("Argument 1 in list-splice must be list!");
+	}
+	return sass_report_error("Must have at least 4 variables in list-splice function call!");
+}
+
 union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, void* cookie) {
 	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 1) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);

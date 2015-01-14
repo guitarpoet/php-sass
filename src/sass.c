@@ -293,15 +293,17 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	Sass_C_Function_Callback fn_gettype = sass_make_function("gettype($i)", call_fn_gettype, NULL);
 	Sass_C_Function_Callback fn_remove_nth = sass_make_function("remove-nth($l, $i)", call_fn_remove_nth, NULL);
 	Sass_C_Function_Callback fn_list_end = sass_make_function("list-end($i)", call_fn_list_end, NULL);
+	Sass_C_Function_Callback fn_list_splice = sass_make_function("list-splice($list, $offset:0, $count:0, $list_append:null)", call_fn_list_splice, NULL);
 
 	// create list of all custom functions
-	Sass_C_Function_List fn_list = sass_make_function_list(6);
+	Sass_C_Function_List fn_list = sass_make_function_list(7);
 	sass_function_set_list_entry(fn_list, 0, fn_php);
 	sass_function_set_list_entry(fn_list, 1, fn_str_get);
 	sass_function_set_list_entry(fn_list, 2, fn_pow);
 	sass_function_set_list_entry(fn_list, 3, fn_gettype);
 	sass_function_set_list_entry(fn_list, 4, fn_remove_nth);
 	sass_function_set_list_entry(fn_list, 5, fn_list_end);
+	sass_function_set_list_entry(fn_list, 6, fn_list_splice);
 	sass_option_set_c_functions(pso_options, fn_list);
 
 	// Adding the php stream importers
