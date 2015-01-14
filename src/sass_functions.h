@@ -11,5 +11,7 @@ union Sass_Value* call_fn_pow(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_gettype(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, void* cookie);
+union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, void* cookie);
+union Sass_Value* call_fn_strip_unit(const union Sass_Value* psv_args, void* cookie);
 
 #endif

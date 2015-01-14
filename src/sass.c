@@ -294,9 +294,11 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	Sass_C_Function_Callback fn_remove_nth = sass_make_function("remove-nth($l, $i)", call_fn_remove_nth, NULL);
 	Sass_C_Function_Callback fn_list_end = sass_make_function("list-end($i)", call_fn_list_end, NULL);
 	Sass_C_Function_Callback fn_list_splice = sass_make_function("list-splice($list, $offset:0, $count:0, $list_append:null)", call_fn_list_splice, NULL);
+	Sass_C_Function_Callback fn_list_set = sass_make_function("list-set($list, $offset, $value)", call_fn_list_set, NULL);
+	Sass_C_Function_Callback fn_strip_unit = sass_make_function("strip-unit($n)", call_fn_strip_unit, NULL);
 
 	// create list of all custom functions
-	Sass_C_Function_List fn_list = sass_make_function_list(7);
+	Sass_C_Function_List fn_list = sass_make_function_list(9);
 	sass_function_set_list_entry(fn_list, 0, fn_php);
 	sass_function_set_list_entry(fn_list, 1, fn_str_get);
 	sass_function_set_list_entry(fn_list, 2, fn_pow);
@@ -304,6 +306,8 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	sass_function_set_list_entry(fn_list, 4, fn_remove_nth);
 	sass_function_set_list_entry(fn_list, 5, fn_list_end);
 	sass_function_set_list_entry(fn_list, 6, fn_list_splice);
+	sass_function_set_list_entry(fn_list, 7, fn_list_set);
+	sass_function_set_list_entry(fn_list, 8, fn_strip_unit);
 	sass_option_set_c_functions(pso_options, fn_list);
 
 	// Adding the php stream importers

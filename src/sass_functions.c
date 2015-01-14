@@ -1,5 +1,41 @@
 #include "sass_functions.h"
 
+union Sass_Value* call_fn_strip_unit(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 1) {
+		union Sass_Value* psv_n = sass_list_get_value(psv_args, 0);
+		if(sass_value_is_number(psv_n)) {
+			return sass_make_number(sass_number_get_value(psv_n), "");
+		}
+		return sass_report_error("Argument in strip-unit must be number!");
+	}
+	return sass_report_error("Must have at least 1 variables in strip unit function call!");
+}
+
+
+union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 3) {
+		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
+		if(sass_value_is_list(psv_list)) {
+			union Sass_Value* psv_index = sass_list_get_value(psv_args, 1);
+			if(sass_value_is_number(psv_index)) {
+				int l = sass_list_get_length(psv_list);
+				union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list));
+				int i = 0;
+				for(i = 0; i < l; i++) {
+					if(i == sass_number_get_value(psv_index))
+						sass_list_set_value(psv_ret, i, sass_dup_value(sass_list_get_value(psv_args, 2)));
+					else
+						sass_list_set_value(psv_ret, i, sass_dup_value(sass_list_get_value(psv_list, i)));
+				}
+				return psv_ret;
+			}
+			return sass_report_error("Argument 2 in list-set must be number!");
+		}
+		return sass_report_error("Argument 1 in list-set must be list!");
+	}
+	return sass_report_error("Must have at least 3 variables in list-set function call!");
+}
+
 union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, void* cookie) {
 	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 4) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
