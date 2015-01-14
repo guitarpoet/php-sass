@@ -2,7 +2,7 @@
 
 ##Install
 
-See INSTALL
+See [INSTALL](https://github.com/guitarpoet/php-sass/blob/master/INSTALL)
 
 ##Play with it
 
