@@ -80,7 +80,6 @@ struct Sass_Import** sass_php_importer(const char* url, const char* prev, void* 
 }
 
 union Sass_Value* sass_report_error(const char* s_error) {
-	zend_throw_exception(zend_exception_get_default(TSRMLS_C), s_error, 0 TSRMLS_CC);
 	return sass_make_error(s_error);
 }
 
