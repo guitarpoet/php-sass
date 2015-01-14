@@ -29,6 +29,7 @@ union Sass_Value* sass_dup_value(union Sass_Value* psv_v);
 void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options);
 void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval* pzv_option);
 int sass_php_count(HashTable* ht);
+bool sass_check_args(const char* s_args, int count, const union Sass_Value* psv_args_list);
 
 PHP_FUNCTION(sass_version);
 PHP_FUNCTION(sass_compile);

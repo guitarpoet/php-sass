@@ -1,6 +1,61 @@
 #include "sass_options.h"
 #include "sass_functions.h"
 
+/**
+ * Checking the arguments according to the argument check string. The types and the names of the string is:
+ *
+ * - *: variable arguments
+ * - s: string
+ * - 0: null
+ * - n: number
+ * - l: list
+ * - m: map
+ * - c: color
+ * - b: boolean
+ * - ?: any type
+ */
+bool sass_check_args(const char* s_args, int count, const union Sass_Value* psv_args_list) {
+	if(sass_value_is_list(psv_args_list) && sass_list_get_length(psv_args_list) == count) {
+		int i;
+		for(i = 0; i < count; i++) {
+			char c = s_args[i];
+			union Sass_Value* psv_v = sass_list_get_value(psv_args_list, i);
+			switch(c) {
+				case 's':
+					if(!sass_value_is_string(psv_v))
+						return false;
+					break;
+				case '0':
+					if(!sass_value_is_null(psv_v))
+						return false;
+					break;
+				case 'n':
+					if(!sass_value_is_number(psv_v))
+						return false;
+					break;
+				case '*':
+					if(!(sass_value_is_list(psv_v) && i == 0)) // For variable args, the argument list must only have 1 argument(as list)
+						return false;
+					break;
+				case 'l':
+					if(!sass_value_is_list(psv_v)) // For variable args, the argument list must only have 1 argument(as list)
+						return false;
+					break;
+				case 'm':
+					if(!sass_value_is_map(psv_v))
+						return false;
+					break;
+				case 'b':
+					if(!sass_value_is_boolean(psv_v))
+						return false;
+					break;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 int sass_php_count(HashTable* ht) {
 	HashPosition position;
 	zval **data = NULL;
