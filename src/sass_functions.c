@@ -17,7 +17,7 @@ union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, void* cooki
 		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list));
 		int i = 0;
 		for(i = 0; i < l; i++) {
-			if(i == sass_number_get_value(psv_index))
+			if(i == sass_number_get_value(psv_index) - 1)
 				sass_list_set_value(psv_ret, i, sass_dup_value(sass_list_get_value(psv_args, 2)));
 			else
 				sass_list_set_value(psv_ret, i, sass_dup_value(sass_list_get_value(psv_list, i)));
