@@ -310,23 +310,25 @@ union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_
  * 		php_options: The php hashtable
  */
 void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
-	HashTable* ht = Z_ARRVAL_P(pzv_options);
-    HashPosition position;
-    zval **data = NULL;
+	if(pzv_options) {
+		HashTable* ht = Z_ARRVAL_P(pzv_options);
+		HashPosition position;
+		zval **data = NULL;
 
-    // Iterating all the key and values in the context
-    for (zend_hash_internal_pointer_reset_ex(ht, &position);
-         zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
-         zend_hash_move_forward_ex(ht, &position)) {
+		// Iterating all the key and values in the context
+		for (zend_hash_internal_pointer_reset_ex(ht, &position);
+			 zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
+			 zend_hash_move_forward_ex(ht, &position)) {
 
-         char *key = NULL;
-         uint  klen;
-         ulong index;
+			 char *key = NULL;
+			 uint  klen;
+			 ulong index;
 
-         if (zend_hash_get_current_key_ex(ht, &key, &klen, &index, 0, &position) == HASH_KEY_IS_STRING) {
-			 sass_set_option(pso_options, key, *data);
-         }
-    }
+			 if (zend_hash_get_current_key_ex(ht, &key, &klen, &index, 0, &position) == HASH_KEY_IS_STRING) {
+				 sass_set_option(pso_options, key, *data);
+			 }
+		}
+	}
 
 
 	// create list of all custom functions
@@ -505,6 +507,34 @@ PHP_FUNCTION(sass_version) {
 	RETURN_STRING(libsass_version(), true);
 }
 
+PHP_FUNCTION(sass_is_complete) {
+	char* s_input = NULL;
+	int input_len = 0;
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &s_input, &input_len) == SUCCESS) {
+		struct Sass_Data_Context* psdc_data_ctx = sass_make_data_context(s_input);
+		struct Sass_Context* psc_ctx = sass_data_context_get_context(psdc_data_ctx);
+		struct Sass_Options* pso_ctx_opt = sass_context_get_options(psc_ctx);
+
+		sass_set_options(pso_ctx_opt, NULL);
+
+		sass_data_context_set_options(psdc_data_ctx, pso_ctx_opt);
+
+		// Do the compile
+		int status = sass_compile_data_context(psdc_data_ctx);
+		
+		// Clean the context
+		sass_delete_data_context(psdc_data_ctx);
+
+		if(status) {
+			RETURN_FALSE;
+		}
+		else {
+			RETURN_TRUE;
+		}
+	}
+	RETURN_FALSE;
+}
+
 static PHP_MINFO_FUNCTION(sass) {
     php_info_print_table_start();
     php_info_print_table_row(2, "Revision", PHP_SASS_VERSION);
@@ -516,6 +546,7 @@ static PHP_MINFO_FUNCTION(sass) {
 static zend_function_entry sass_functions[] = {
     PHP_FE(sass_compile, NULL)   
     PHP_FE(sass_version, NULL)   
+    PHP_FE(sass_is_complete, NULL)   
 	PHP_FE_END
 };
   
