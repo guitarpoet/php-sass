@@ -6,7 +6,9 @@
 
 union Sass_Value* call_fn_php(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_str_get(const union Sass_Value* psv_args, void* cookie);
+union Sass_Value* call_fn_list_start(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, void* cookie);
+union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_pow(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_gettype(const union Sass_Value* psv_args, void* cookie);
 union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, void* cookie);

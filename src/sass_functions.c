@@ -1,5 +1,19 @@
 #include "sass_functions.h"
 
+union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_check_args("l", 1, psv_args)) {
+		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
+		int l = sass_list_get_length(psv_list);
+		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list));
+		int i = 0;
+		for(i = l - 1; i >= 0; i--) {
+			sass_list_set_value(psv_ret, l - i - 1, sass_dup_value(sass_list_get_value(psv_list, i)));
+		}
+		return psv_ret;
+	}
+	return sass_report_error("Argument in reverse must be list!");
+}
+
 union Sass_Value* call_fn_strip_unit(const union Sass_Value* psv_args, void* cookie) {
 	if(sass_check_args("n", 1, psv_args)) {
 		union Sass_Value* psv_n = sass_list_get_value(psv_args, 0);
@@ -120,6 +134,18 @@ union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, void* co
 	return sass_report_error("Argument in list-splice is not right!");
 }
 
+union Sass_Value* call_fn_list_start(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_check_args("l", 1, psv_args)) {
+		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
+		int l = sass_list_get_length(psv_list);
+		if(l) {
+			return sass_dup_value(sass_list_get_value(psv_list, 0));
+		}
+		return sass_report_error("List is empty!");
+	}	
+	return sass_report_error("Argument in first is not right!");
+}
+
 union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, void* cookie) {
 	if(sass_check_args("l", 1, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
@@ -129,7 +155,7 @@ union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, void* cooki
 		}
 		return sass_report_error("List is empty!");
 	}	
-	return sass_report_error("Argument in list-end is not right!");
+	return sass_report_error("Argument in last is not right!");
 }
 
 union Sass_Value* sass_dup_value(union Sass_Value* psv_v) {

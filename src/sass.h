@@ -21,6 +21,11 @@
 #define SASS_TYPE_FILE "file"
 #define SASS_TYPE_DATA "data"
 
+#define SASS_FUNCTION(name, def) Sass_C_Function_Callback \
+	fn_##name = sass_make_function(def, name, NULL); \
+	sass_function_set_list_entry(fn_list, i++, fn_##name);
+	
+
 const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* psv_error);
 union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_args);
 union Sass_Value* sass_report_error(const char* s_error);
