@@ -5,7 +5,7 @@
 #include "config.h"
 #endif
 
-#define PHP_SASS_VERSION "0.0.1"
+#define PHP_SASS_VERSION "0.0.2"
 #define PHP_SASS_EXTNAME "sass"
 #define COUNT_NORMAL      0
 #define COUNT_RECURSIVE   1
@@ -16,6 +16,7 @@
 #include <Zend/zend_exceptions.h>
 #include <ext/standard/php_array.h>
 #include <libsass/sass_context.h>
+#include "ext/standard/info.h"
 
 #define SASS_TYPE_FILE "file"
 #define SASS_TYPE_DATA "data"
@@ -31,6 +32,7 @@ void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval*
 int sass_php_count(HashTable* ht);
 bool sass_check_args(const char* s_args, int count, const union Sass_Value* psv_args_list);
 
+static PHP_MINFO_FUNCTION(sass);
 PHP_FUNCTION(sass_version);
 PHP_FUNCTION(sass_compile);
 

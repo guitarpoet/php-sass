@@ -527,10 +527,18 @@ PHP_FUNCTION(sass_version) {
 	RETURN_STRING(libsass_version(), true);
 }
 
+static PHP_MINFO_FUNCTION(sass) {
+    php_info_print_table_start();
+    php_info_print_table_row(2, "Revision", PHP_SASS_VERSION);
+    php_info_print_table_row(2, "LibSass Revision", libsass_version());
+    php_info_print_table_end();
+    DISPLAY_INI_ENTRIES();    
+}
+
 static zend_function_entry sass_functions[] = {
     PHP_FE(sass_compile, NULL)   
     PHP_FE(sass_version, NULL)   
-    {NULL, NULL, NULL}         
+	PHP_FE_END
 };
   
 zend_module_entry sass_module_entry = {
@@ -543,7 +551,7 @@ zend_module_entry sass_module_entry = {
 	NULL, // No deinitialize functions
     NULL,
     NULL,
-    NULL,
+	PHP_MINFO(sass),
 #if ZEND_MODULE_API_NO >= 20010901
     PHP_SASS_VERSION,         
 #endif
