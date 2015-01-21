@@ -358,9 +358,7 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
  * 		options: The php hashtable for all the options
  * 		error: The error string
  */
-const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* psv_error) {
-
-	const char* ret = NULL;
+bool sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* pzv_ret, zval* psv_error) {
 
 	if(strcmp(s_type, SASS_TYPE_FILE) == 0) {
 		// Initialize the context
@@ -382,7 +380,7 @@ const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_op
 			ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
 		}
 		else {
-			ret = sass_context_get_output_string(psc_ctx);
+			ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
 		}
 
 		// Clean the context
@@ -407,16 +405,16 @@ const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_op
 			ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
 		}
 		else {
-			ret = sass_context_get_output_string(psc_ctx);
+			ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
 		}
 		// Clean the context
 		sass_delete_data_context(psdc_data_ctx);
 	}
 
-	if(ret)
-		return ret;
+	if(pzv_ret)
+		return true;
 
-	return NULL;
+	return false;
 }
 
 void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval* pzv_option) {
@@ -484,10 +482,9 @@ PHP_FUNCTION(sass_compile) {
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssAz", &s_type, &type_len,
 			   	&s_input, &input_len,
 				&pzv_options, &pzv_error) == SUCCESS) {
-		const char* s_ret = sass_compile_context(s_input, s_type, pzv_options, pzv_error);
-
-		if(s_ret)
-			RETURN_STRING(s_ret, true);
+		if(sass_compile_context(s_input, s_type, pzv_options, return_value, pzv_error)) {
+			return;
+		}
 
 		RETURN_FALSE;
 	}

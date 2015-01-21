@@ -7,8 +7,8 @@ Check for simple compile
 $error = "";
 $ret = sass_compile("data", "foo{width:2*2px;}", array('output_style' => 3), $error);
 if($ret)
-	echo 1;
+	echo $ret;
 else
 	echo $error;
 --EXPECT--
-1
+foo{width:4px}

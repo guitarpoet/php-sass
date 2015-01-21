@@ -26,7 +26,7 @@
 	sass_function_set_list_entry(fn_list, i++, fn_##name);
 	
 
-const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* psv_error);
+bool sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* pzv_ret, zval* pzv_error);
 union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_args);
 union Sass_Value* sass_report_error(const char* s_error);
 void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg);
