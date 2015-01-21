@@ -15,7 +15,7 @@
 #include <php.h>
 #include <Zend/zend_exceptions.h>
 #include <ext/standard/php_array.h>
-#include <libsass/sass_context.h>
+#include <sass_context.h>
 #include "ext/standard/info.h"
 
 #define SASS_TYPE_FILE "file"
