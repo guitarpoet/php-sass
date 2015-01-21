@@ -1,5 +1,16 @@
 #include "sass_functions.h"
 
+union Sass_Value* call_fn_convert_unit(const union Sass_Value* psv_args, void* cookie) {
+	if(sass_check_args("ns", 2, psv_args)) {
+		union Sass_Value* psv_n = sass_list_get_value(psv_args, 0);
+		union Sass_Value* psv_s = sass_list_get_value(psv_args, 1);
+		union Sass_Value* psv_ret = sass_make_number(sass_number_get_value(psv_n), 
+				sass_string_get_value(psv_s));
+		return psv_ret;
+	}
+	return sass_report_error("Argument in convert_unit is not right!");
+}
+
 union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, void* cookie) {
 	if(sass_check_args("l", 1, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
