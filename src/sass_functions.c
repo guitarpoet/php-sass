@@ -205,7 +205,7 @@ union Sass_Value* call_fn_str_get(const union Sass_Value* psv_args, void* cookie
 		union Sass_Value* psv_index = sass_list_get_value(psv_args, 1);
 		int index = sass_number_get_value(psv_index);
 		const char* s_str = sass_string_get_value(psv_str);
-		if(index > 0 && index < strlen(s_str)) {
+		if(index > 0 && index <= strlen(s_str)) {
 			char buf[] = {s_str[index-1], 0};
 			return sass_make_string(buf);
 		}
