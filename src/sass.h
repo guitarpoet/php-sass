@@ -15,7 +15,7 @@
 #include <php.h>
 #include <Zend/zend_exceptions.h>
 #include <ext/standard/php_array.h>
-#include <libsass/sass_context.h>
+#include <sass_context.h>
 #include "ext/standard/info.h"
 
 #define SASS_TYPE_FILE "file"
@@ -26,7 +26,7 @@
 	sass_function_set_list_entry(fn_list, i++, fn_##name);
 	
 
-const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* psv_error);
+bool sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* pzv_ret, zval* pzv_error);
 union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_args);
 union Sass_Value* sass_report_error(const char* s_error);
 void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg);
@@ -40,6 +40,7 @@ bool sass_check_args(const char* s_args, int count, const union Sass_Value* psv_
 static PHP_MINFO_FUNCTION(sass);
 PHP_FUNCTION(sass_version);
 PHP_FUNCTION(sass_compile);
+PHP_FUNCTION(sass_is_complete);
 
 #define phpext_clips_ptr &sass_module_entry
 

@@ -4,11 +4,11 @@ if test "$PHP_SASS" != "no"; then
 	if test "$PHP_SASS" != "yes"; then
 		LIBSASS_SEARCH_DIRS=$PHP_SASS
 	else
-		LIBSASS_SEARCH_DIRS="/usr/local/include /usr/include /opt/local/include /usr/local/src /opt/local/src"
+		LIBSASS_SEARCH_DIRS="/usr/local/include /usr/include /opt/local/include /usr/local/src/libsass /opt/local/src/libsass"
 	fi
 
 	for i in $LIBSASS_SEARCH_DIRS; do
-		if test -f $i/libsass/sass.h; then
+		if test -f $i/sass.h; then
 			LIBSASS_INCDIR=$i
 		fi
 	done
@@ -21,7 +21,7 @@ if test "$PHP_SASS" != "no"; then
 	done
 
 	if test -z "$LIBSASS_INCDIR"; then
-		AC_MSG_ERROR(Cannot find libsass at /usr/local or /opt/local !)
+		AC_MSG_ERROR(Cannot find libsass headers!)
 	fi
 
 	if test -z "$LIBSASS_LD_DIR"; then

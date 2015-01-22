@@ -310,28 +310,30 @@ union Sass_Value* sass_php_call(const char* s_func, const union Sass_Value* psv_
  * 		php_options: The php hashtable
  */
 void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
-	HashTable* ht = Z_ARRVAL_P(pzv_options);
-    HashPosition position;
-    zval **data = NULL;
+	if(pzv_options) {
+		HashTable* ht = Z_ARRVAL_P(pzv_options);
+		HashPosition position;
+		zval **data = NULL;
 
-    // Iterating all the key and values in the context
-    for (zend_hash_internal_pointer_reset_ex(ht, &position);
-         zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
-         zend_hash_move_forward_ex(ht, &position)) {
+		// Iterating all the key and values in the context
+		for (zend_hash_internal_pointer_reset_ex(ht, &position);
+			 zend_hash_get_current_data_ex(ht, (void**) &data, &position) == SUCCESS;
+			 zend_hash_move_forward_ex(ht, &position)) {
 
-         char *key = NULL;
-         uint  klen;
-         ulong index;
+			 char *key = NULL;
+			 uint  klen;
+			 ulong index;
 
-         if (zend_hash_get_current_key_ex(ht, &key, &klen, &index, 0, &position) == HASH_KEY_IS_STRING) {
-			 sass_set_option(pso_options, key, *data);
-         }
-    }
+			 if (zend_hash_get_current_key_ex(ht, &key, &klen, &index, 0, &position) == HASH_KEY_IS_STRING) {
+				 sass_set_option(pso_options, key, *data);
+			 }
+		}
+	}
 
 
 	// create list of all custom functions
 	int i = 0;
-	Sass_C_Function_List fn_list = sass_make_function_list(10);
+	Sass_C_Function_List fn_list = sass_make_function_list(13);
 	SASS_FUNCTION(call_fn_php, "php($func...)");
 	SASS_FUNCTION(call_fn_str_get, "str-get($str, $index)");
 	SASS_FUNCTION(call_fn_pow, "pow($i, $n)");
@@ -343,6 +345,8 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 	SASS_FUNCTION(call_fn_list_splice,"list-splice($list, $offset:0, $count:0, $list_append:null)");
 	SASS_FUNCTION(call_fn_list_set,"list-set($list, $offset, $value)");
 	SASS_FUNCTION(call_fn_strip_unit,"strip-unit($n)");
+	SASS_FUNCTION(call_fn_assert,"assert($b, $m)");
+	SASS_FUNCTION(call_fn_convert_unit,"convert-unit($n, $u)");
 	sass_option_set_c_functions(pso_options, fn_list);
 }
 
@@ -355,9 +359,7 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
  * 		options: The php hashtable for all the options
  * 		error: The error string
  */
-const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* psv_error) {
-
-	const char* ret = NULL;
+bool sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* pzv_ret, zval* psv_error) {
 
 	if(strcmp(s_type, SASS_TYPE_FILE) == 0) {
 		// Initialize the context
@@ -379,7 +381,7 @@ const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_op
 			ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
 		}
 		else {
-			ret = sass_context_get_output_string(psc_ctx);
+			ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
 		}
 
 		// Clean the context
@@ -404,16 +406,16 @@ const char* sass_compile_context(char* s_input, const char* s_type, zval* pzv_op
 			ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
 		}
 		else {
-			ret = sass_context_get_output_string(psc_ctx);
+			ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
 		}
 		// Clean the context
 		sass_delete_data_context(psdc_data_ctx);
 	}
 
-	if(ret)
-		return ret;
+	if(pzv_ret)
+		return true;
 
-	return NULL;
+	return false;
 }
 
 void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval* pzv_option) {
@@ -481,10 +483,9 @@ PHP_FUNCTION(sass_compile) {
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssAz", &s_type, &type_len,
 			   	&s_input, &input_len,
 				&pzv_options, &pzv_error) == SUCCESS) {
-		const char* s_ret = sass_compile_context(s_input, s_type, pzv_options, pzv_error);
-
-		if(s_ret)
-			RETURN_STRING(s_ret, true);
+		if(sass_compile_context(s_input, s_type, pzv_options, return_value, pzv_error)) {
+			return;
+		}
 
 		RETURN_FALSE;
 	}
@@ -505,6 +506,34 @@ PHP_FUNCTION(sass_version) {
 	RETURN_STRING(libsass_version(), true);
 }
 
+PHP_FUNCTION(sass_is_complete) {
+	char* s_input = NULL;
+	int input_len = 0;
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &s_input, &input_len) == SUCCESS) {
+		struct Sass_Data_Context* psdc_data_ctx = sass_make_data_context(s_input);
+		struct Sass_Context* psc_ctx = sass_data_context_get_context(psdc_data_ctx);
+		struct Sass_Options* pso_ctx_opt = sass_context_get_options(psc_ctx);
+
+		sass_set_options(pso_ctx_opt, NULL);
+
+		sass_data_context_set_options(psdc_data_ctx, pso_ctx_opt);
+
+		// Do the compile
+		int status = sass_compile_data_context(psdc_data_ctx);
+		
+		// Clean the context
+		sass_delete_data_context(psdc_data_ctx);
+
+		if(status) {
+			RETURN_FALSE;
+		}
+		else {
+			RETURN_TRUE;
+		}
+	}
+	RETURN_FALSE;
+}
+
 static PHP_MINFO_FUNCTION(sass) {
     php_info_print_table_start();
     php_info_print_table_row(2, "Revision", PHP_SASS_VERSION);
@@ -516,6 +545,7 @@ static PHP_MINFO_FUNCTION(sass) {
 static zend_function_entry sass_functions[] = {
     PHP_FE(sass_compile, NULL)   
     PHP_FE(sass_version, NULL)   
+    PHP_FE(sass_is_complete, NULL)   
 	PHP_FE_END
 };
   
