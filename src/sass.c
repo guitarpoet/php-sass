@@ -452,9 +452,6 @@ void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval*
 	else if(strcmp(s_name, SASS_OPTION_OUTPUT_PATH) == 0) {
 		sass_option_set_output_path(pso_options, Z_STRVAL_P(pzv_option));
 	}
-	else if(strcmp(s_name, SASS_OPTION_IMAGE_PATH) == 0) {
-		sass_option_set_image_path(pso_options, Z_STRVAL_P(pzv_option));
-	}
 	else if(strcmp(s_name, SASS_OPTION_INCLUDE_PATH) == 0) {
 		sass_option_set_include_path(pso_options, Z_STRVAL_P(pzv_option));
 	}
