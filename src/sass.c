@@ -333,7 +333,7 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
 
 	// create list of all custom functions
 	int i = 0;
-	Sass_C_Function_List fn_list = sass_make_function_list(13);
+	Sass_Function_List fn_list = sass_make_function_list(13);
 	SASS_FUNCTION(call_fn_php, "php($func...)");
 	SASS_FUNCTION(call_fn_str_get, "str-get($str, $index)");
 	SASS_FUNCTION(call_fn_pow, "pow($i, $n)");

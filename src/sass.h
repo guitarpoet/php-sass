@@ -16,12 +16,13 @@
 #include <Zend/zend_exceptions.h>
 #include <ext/standard/php_array.h>
 #include <sass_context.h>
+#include <sass_functions.h>
 #include "ext/standard/info.h"
 
 #define SASS_TYPE_FILE "file"
 #define SASS_TYPE_DATA "data"
 
-#define SASS_FUNCTION(name, def) Sass_C_Function_Callback \
+#define SASS_FUNCTION(name, def) Sass_Function_Entry \
 	fn_##name = sass_make_function(def, name, NULL); \
 	sass_function_set_list_entry(fn_list, i++, fn_##name);
 	
