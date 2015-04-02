@@ -1,5 +1,6 @@
 #include "sass_options.h"
 #include "sass_functions.h"
+#include <string.h>
 
 /**
  * Checking the arguments according to the argument check string. The types and the names of the string is:
@@ -480,6 +481,7 @@ PHP_FUNCTION(sass_compile) {
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssAz", &s_type, &type_len,
 			   	&s_input, &input_len,
 				&pzv_options, &pzv_error) == SUCCESS) {
+		s_input = strdup(s_input);
 		if(sass_compile_context(s_input, s_type, pzv_options, return_value, pzv_error)) {
 			return;
 		}
