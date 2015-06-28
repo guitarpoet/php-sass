@@ -438,6 +438,9 @@ void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval*
 	else if(strcmp(s_name, SASS_OPTION_OMIT_SOURCE_MAP_URL) == 0) {
 		sass_option_set_omit_source_map_url(pso_options, Z_BVAL_P(pzv_option));
 	}
+	else if(strcmp(s_name, SASS_OPTION_SOURCE_MAP_FILE) == 0) {
+		sass_option_set_source_map_file(pso_options, Z_STRVAL_P(pzv_option));
+	}
 	else if(strcmp(s_name, SASS_OPTION_IS_INDENTED_SYNTAX_SRC) == 0) {
 		sass_option_set_is_indented_syntax_src(pso_options, Z_BVAL_P(pzv_option));
 	}
