@@ -28,8 +28,9 @@ if test "$PHP_SASS" != "no"; then
 		AC_MSG_ERROR(Cannot find libsass.a at /usr/lib, /usr/local/lib or /opt/local/lib !)
 	fi
 
+	PHP_REQUIRE_CXX()
 	PHP_ADD_LIBRARY_WITH_PATH(sass, $LIBSASS_LD_DIR, LIBSASS_SHARED_LIBADD)
 	LDFLAGS="-lsass -lstdc++"
 	PHP_ADD_INCLUDE($LIBSASS_INCDIR)
-    PHP_NEW_EXTENSION(sass, src/sass.c src/sass_functions.c, $ext_shared)
+    PHP_NEW_EXTENSION(sass, src/sass.cpp src/sass_functions.cpp, $ext_shared)
 fi

@@ -1,6 +1,59 @@
 #include "sass_options.h"
 #include "sass_functions.h"
+#include <json.hpp>
 #include <string.h>
+#include <context.hpp>
+
+using namespace std;
+using namespace Sass;
+
+// sass config options structure
+struct Sass_Options_Fake {
+	int precision;
+	enum Sass_Output_Style output_style;
+	bool source_comments;
+	bool source_map_embed;
+	bool source_map_contents;
+	bool omit_source_map_url;
+	bool is_indented_syntax_src;
+	char* input_path;
+	char* output_path;
+	const char* indent;
+	const char* linefeed;
+	char* include_path;
+	char* plugin_path;
+	struct string_list* include_paths;
+	struct string_list* plugin_paths;
+	char* source_map_file;
+	char* source_map_root;
+	Sass_Function_List c_functions;
+	Sass_Importer_List c_importers;
+	Sass_Importer_List c_headers;
+};
+
+// base for all contexts
+struct Sass_Context_Fake : Sass_Options_Fake {
+	int type;
+	char* output_string;
+	char* source_map_string;
+	int error_status;
+	char* error_json;
+	char* error_text;
+	char* error_message;
+	char* error_file;
+	size_t error_line;
+	size_t error_column;
+	const char* error_src;
+	char** included_files;
+};
+
+struct Sass_Compiler_Fake {
+	Sass_Compiler_State state;
+	Sass_Context* c_ctx;
+	Context* cpp_ctx;
+	Block* root;
+};
+
 
 /**
  * Checking the arguments according to the argument check string. The types and the names of the string is:
@@ -144,7 +197,7 @@ void sass_to_php(union Sass_Value* psv_arg, zval* pzv_arg) {
 
 union Sass_Value* convert_php_to_list(zval* pzv_val) {
 	int count = sass_php_count(Z_ARRVAL_P(pzv_val));
-	union Sass_Value** values = safe_emalloc(sizeof(union Sass_Value*), count, 0);
+	union Sass_Value** values = static_cast<union Sass_Value**>(safe_emalloc(sizeof(union Sass_Value*), count, 0));
 
 	HashTable* ht = Z_ARRVAL_P(pzv_val);
 	HashPosition position;
@@ -182,8 +235,8 @@ union Sass_Value* convert_php_to_list(zval* pzv_val) {
 
 union Sass_Value* convert_php_to_map(zval* pzv_val) {
 	int count = sass_php_count(Z_OBJPROP_P(pzv_val));
-	const char** keys = emalloc((count + 1) * sizeof(const char*));
-	union Sass_Value** values = emalloc((count + 1) * sizeof(union Sass_Value*));
+	const char** keys = static_cast<const char**>(emalloc((count + 1) * sizeof(const char*)));
+	union Sass_Value** values = static_cast<union Sass_Value**>(emalloc((count + 1) * sizeof(union Sass_Value*)));
 
 	HashTable* ht = Z_OBJPROP_P(pzv_val);
 	HashPosition position;
@@ -362,55 +415,66 @@ void sass_set_options(struct Sass_Options* pso_options, zval* pzv_options) {
  */
 bool sass_compile_context(char* s_input, const char* s_type, zval* pzv_options, zval* pzv_ret, zval* psv_error) {
 
-	if(strcmp(s_type, SASS_TYPE_FILE) == 0) {
-		// Initialize the context
-		struct Sass_File_Context* psfc_file_ctx = sass_make_file_context(s_input);
-		struct Sass_Context* psc_ctx = sass_file_context_get_context(psfc_file_ctx);
-		struct Sass_Options* pso_ctx_opt = sass_context_get_options(psc_ctx);
+	bool is_file = strcmp(s_type, SASS_TYPE_FILE) == 0;
+	struct Sass_Context* psc_ctx = NULL;
+	struct Sass_Options* pso_ctx_opt = NULL;
 
-		// Set the options from php
-		sass_set_options(pso_ctx_opt, pzv_options);
-		
-		// Set it back to sass
-		sass_file_context_set_options(psfc_file_ctx, pso_ctx_opt);
+	if(is_file) {
+		psc_ctx = sass_file_context_get_context(sass_make_file_context(s_input));
+	}
+	else {
+		psc_ctx = sass_data_context_get_context(sass_make_data_context(s_input));
+	}
 
-		// Do the compile
-		int status = sass_compile_file_context(psfc_file_ctx);
+	pso_ctx_opt = sass_context_get_options(psc_ctx);
 
-		if(status) {
-			// Set the error message
-			ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
-		}
-		else {
-			ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
-		}
+	// Set the options from php
+	sass_set_options(pso_ctx_opt, pzv_options);
+	
+	// Set it back to sass
+	if(is_file) {
+		sass_file_context_set_options((struct Sass_File_Context*)(psc_ctx), pso_ctx_opt);
+	}
+	else {
+		sass_data_context_set_options((struct Sass_Data_Context*)(psc_ctx), pso_ctx_opt);
+	}
 
+	struct Sass_Compiler_Fake* fake = NULL;
+
+	if(is_file) {
+		fake = (struct Sass_Compiler_Fake *) sass_make_file_compiler((struct Sass_File_Context*)(psc_ctx));
+	}
+	else {
+		fake = (struct Sass_Compiler_Fake *) sass_make_data_compiler((struct Sass_Data_Context*)(psc_ctx));
+	}
+
+	Context* context = fake->cpp_ctx;
+
+
+	struct Sass_Compiler* compiler = (struct Sass_Compiler*) fake;
+
+	// call each compiler step
+	sass_compiler_parse(compiler);
+	sass_compiler_execute(compiler);
+    sass_delete_compiler(compiler);
+
+	int status = ((struct Sass_Context_Fake *) psc_ctx)->error_status;
+
+	if(status) {
+		// Set the error message
+		ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
+	}
+	else {
+		ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
+	}
+
+	if(is_file) {
 		// Clean the context
-		sass_delete_file_context(psfc_file_ctx);
+		sass_delete_file_context((struct Sass_File_Context*)(psc_ctx));
 
 	}
-	else if(strcmp(s_type, SASS_TYPE_DATA) == 0) {
-		struct Sass_Data_Context* psdc_data_ctx = sass_make_data_context(s_input);
-		struct Sass_Context* psc_ctx = sass_data_context_get_context(psdc_data_ctx);
-		struct Sass_Options* pso_ctx_opt = sass_context_get_options(psc_ctx);
-
-		sass_set_options(pso_ctx_opt, pzv_options);
-
-		// Set it back to sass
-		sass_data_context_set_options(psdc_data_ctx, pso_ctx_opt);
-
-		// Do the compile
-		int status = sass_compile_data_context(psdc_data_ctx);
-		
-		if(status) {
-			// Set the error message
-			ZVAL_STRING(psv_error, sass_context_get_error_message(psc_ctx), true);
-		}
-		else {
-			ZVAL_STRING(pzv_ret, sass_context_get_output_string(psc_ctx), true);
-		}
-		// Clean the context
-		sass_delete_data_context(psdc_data_ctx);
+	else {
+		sass_delete_data_context((struct Sass_Data_Context*)(psc_ctx));
 	}
 
 	if(pzv_ret)
@@ -424,7 +488,7 @@ void sass_set_option(struct Sass_Options* pso_options, const char* s_name, zval*
 		sass_option_set_precision(pso_options, Z_LVAL_P(pzv_option));
 	}
 	else if(strcmp(s_name, SASS_OPTION_OUTPUT_STYLE) == 0) {
-		sass_option_set_output_style(pso_options, Z_LVAL_P(pzv_option));
+		sass_option_set_output_style(pso_options, static_cast<enum Sass_Output_Style>(Z_LVAL_P(pzv_option)));
 	}
 	else if(strcmp(s_name, SASS_OPTION_SOURCE_COMMENTS) == 0) {
 		sass_option_set_source_comments(pso_options, Z_BVAL_P(pzv_option));
