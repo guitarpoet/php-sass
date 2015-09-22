@@ -13,10 +13,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <php.h>
+#include <sass.h>
 #include <Zend/zend_exceptions.h>
 #include <ext/standard/php_array.h>
-#include <sass_context.h>
-#include <sass_functions.h>
 #include "ext/standard/info.h"
 
 #define SASS_TYPE_FILE "file"

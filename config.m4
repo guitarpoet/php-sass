@@ -4,12 +4,12 @@ if test "$PHP_SASS" != "no"; then
 	if test "$PHP_SASS" != "yes"; then
 		LIBSASS_SEARCH_DIRS=$PHP_SASS
 	else
-		LIBSASS_SEARCH_DIRS="/usr/local/include /usr/include /opt/local/include /usr/local/src/libsass /opt/local/src/libsass"
+		LIBSASS_SEARCH_DIRS="/usr/local/src /opt/local/src"
 	fi
 
 	for i in $LIBSASS_SEARCH_DIRS; do
-		if test -f $i/sass.h; then
-			LIBSASS_INCDIR=$i
+		if test -f $i/libsass/include/sass.h; then
+			LIBSASS_SRC=$i/libsass
 		fi
 	done
 
@@ -20,8 +20,8 @@ if test "$PHP_SASS" != "no"; then
 		fi
 	done
 
-	if test -z "$LIBSASS_INCDIR"; then
-		AC_MSG_ERROR(Cannot find libsass headers!)
+	if test -z "$LIBSASS_SRC"; then
+		AC_MSG_ERROR(Cannot find libsass codes!)
 	fi
 
 	if test -z "$LIBSASS_LD_DIR"; then
@@ -31,6 +31,7 @@ if test "$PHP_SASS" != "no"; then
 	PHP_REQUIRE_CXX()
 	PHP_ADD_LIBRARY_WITH_PATH(sass, $LIBSASS_LD_DIR, LIBSASS_SHARED_LIBADD)
 	LDFLAGS="-lsass -lstdc++"
-	PHP_ADD_INCLUDE($LIBSASS_INCDIR)
+	PHP_ADD_INCLUDE($LIBSASS_SRC/include)
+	PHP_ADD_INCLUDE($LIBSASS_SRC/src)
     PHP_NEW_EXTENSION(sass, src/sass.cpp src/sass_functions.cpp, $ext_shared)
 fi
