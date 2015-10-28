@@ -1,6 +1,6 @@
 #include "sass_functions.h"
 
-union Sass_Value* call_fn_convert_unit(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options) {
+union Sass_Value* call_fn_convert_unit(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options) {
 	if(sass_check_args("ns", 2, psv_args)) {
 		union Sass_Value* psv_n = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_s = sass_list_get_value(psv_args, 1);
@@ -11,7 +11,7 @@ union Sass_Value* call_fn_convert_unit(const union Sass_Value* psv_args, Sass_Fu
 	return sass_report_error("Argument in convert_unit is not right!");
 }
 
-union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("l", 1, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		int l = sass_list_get_length(psv_list);
@@ -25,7 +25,7 @@ union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, Sass_Fu
 	return sass_report_error("Argument in reverse must be list!");
 }
 
-union Sass_Value* call_fn_assert(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_assert(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("bs", 2, psv_args)) {
 		union Sass_Value* psv_b = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_s = sass_list_get_value(psv_args, 1);
@@ -40,7 +40,7 @@ union Sass_Value* call_fn_assert(const union Sass_Value* psv_args, Sass_Function
 	return sass_report_error("Argument in assert is not right!");
 }
 
-union Sass_Value* call_fn_strip_unit(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_strip_unit(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("n", 1, psv_args)) {
 		union Sass_Value* psv_n = sass_list_get_value(psv_args, 0);
 		return sass_make_number(sass_number_get_value(psv_n), "");
@@ -49,7 +49,7 @@ union Sass_Value* call_fn_strip_unit(const union Sass_Value* psv_args, Sass_Func
 }
 
 
-union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("ln?", 3, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_index = sass_list_get_value(psv_args, 1);
@@ -67,7 +67,7 @@ union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, Sass_Functi
 	return sass_report_error("Argument in list-set is not right!");
 }
 
-union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("lnn?", 4, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_offset = sass_list_get_value(psv_args, 1);
@@ -160,7 +160,7 @@ union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, Sass_Fun
 	return sass_report_error("Argument in list-splice is not right!");
 }
 
-union Sass_Value* call_fn_list_start(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_list_start(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("l", 1, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		int l = sass_list_get_length(psv_list);
@@ -172,7 +172,7 @@ union Sass_Value* call_fn_list_start(const union Sass_Value* psv_args, Sass_Func
 	return sass_report_error("Argument in first is not right!");
 }
 
-union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_list_end(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("l", 1, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		int l = sass_list_get_length(psv_list);
@@ -225,7 +225,7 @@ union Sass_Value* sass_dup_value(union Sass_Value* psv_v) {
 	return sass_make_null();
 }
 
-union Sass_Value* call_fn_str_get(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_str_get(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("sn", 2, psv_args)) {
 		union Sass_Value* psv_str = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_index = sass_list_get_value(psv_args, 1);
@@ -239,7 +239,7 @@ union Sass_Value* call_fn_str_get(const union Sass_Value* psv_args, Sass_Functio
 	return sass_report_error("Argument in str-get is not right!");
 }
 
-union Sass_Value* call_fn_php(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_php(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_value_is_list(psv_args)) {
 		const union Sass_Value* psv_params = psv_args;
 		union Sass_Value* psv_func = sass_list_get_value(psv_args, 0);
@@ -258,7 +258,7 @@ union Sass_Value* call_fn_php(const union Sass_Value* psv_args, Sass_Function_En
 	return sass_report_error("Call php failed!");
 }
 
-union Sass_Value* call_fn_pow(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_pow(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("nn", 2, psv_args)) {
 		union Sass_Value* psv_i = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_n = sass_list_get_value(psv_args, 1);
@@ -269,7 +269,7 @@ union Sass_Value* call_fn_pow(const union Sass_Value* psv_args, Sass_Function_En
 	return sass_report_error("Argument in pow is not right!");
 }
 
-union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_check_args("ln", 2, psv_args)) {
 		const union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		const union Sass_Value* psv_n = sass_list_get_value(psv_args, 1);
@@ -294,7 +294,7 @@ union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, Sass_Func
 	return sass_report_error("Argument in remove-nth is not right!");
 }
 
-union Sass_Value* call_fn_gettype(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Options* options)  {
+union Sass_Value* call_fn_gettype(const union Sass_Value* psv_args, Sass_Function_Entry cb, struct Sass_Compiler* options)  {
 	if(sass_value_is_list(psv_args) && sass_list_get_length(psv_args) == 1) {
 		const union Sass_Value* psv_arg = sass_list_get_value(psv_args, 0);
 		if(sass_value_is_null(psv_arg)) {
