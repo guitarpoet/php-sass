@@ -15,7 +15,7 @@ union Sass_Value* call_fn_list_reverse(const union Sass_Value* psv_args, Sass_Fu
 	if(sass_check_args("l", 1, psv_args)) {
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		int l = sass_list_get_length(psv_list);
-		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list));
+		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list), true);
 		int i = 0;
 		for(i = l - 1; i >= 0; i--) {
 			sass_list_set_value(psv_ret, l - i - 1, sass_dup_value(sass_list_get_value(psv_list, i)));
@@ -54,7 +54,7 @@ union Sass_Value* call_fn_list_set(const union Sass_Value* psv_args, Sass_Functi
 		union Sass_Value* psv_list = sass_list_get_value(psv_args, 0);
 		union Sass_Value* psv_index = sass_list_get_value(psv_args, 1);
 		int l = sass_list_get_length(psv_list);
-		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list));
+		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_list), true);
 		int i = 0;
 		for(i = 0; i < l; i++) {
 			if(i == sass_number_get_value(psv_index) - 1)
@@ -97,7 +97,7 @@ union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, Sass_Fun
 
 		if(sass_value_is_list(psv_list_append)) {
 			int l2 = sass_list_get_length(psv_list_append);
-			psv_ret = sass_make_list(left + l2, sass_list_get_separator(psv_list));
+			psv_ret = sass_make_list(left + l2, sass_list_get_separator(psv_list), true);
 
 			for(i = 0; i < l + l2; i++) {
 				union Sass_Value* psv_v = NULL;
@@ -118,7 +118,7 @@ union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, Sass_Fun
 		}
 		else {
 			if(sass_value_is_null(psv_list_append)) {
-				psv_ret = sass_make_list(left, sass_list_get_separator(psv_list));
+				psv_ret = sass_make_list(left, sass_list_get_separator(psv_list), true);
 				for(i = 0; i < l; i++) {
 					union Sass_Value* psv_v = NULL;
 					if(i < offset) {
@@ -135,7 +135,7 @@ union Sass_Value* call_fn_list_splice(const union Sass_Value* psv_args, Sass_Fun
 				return psv_ret;
 			}
 			else {
-				psv_ret = sass_make_list(left + 1, sass_list_get_separator(psv_list));
+				psv_ret = sass_make_list(left + 1, sass_list_get_separator(psv_list), true);
 				for(i = 0; i < l + 1; i++) {
 					union Sass_Value* psv_v = NULL;
 					if(i < offset) {
@@ -205,7 +205,7 @@ union Sass_Value* sass_dup_value(union Sass_Value* psv_v) {
 	}
 	else if (sass_value_is_list(psv_v)) {
 		int l = sass_list_get_length(psv_v);
-		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_v));
+		union Sass_Value* psv_ret = sass_make_list(l, sass_list_get_separator(psv_v), true);
 		int i = 0;
 		for(i = 0; i < l; i++) {
 			sass_list_set_value(psv_ret, i, sass_dup_value(sass_list_get_value(psv_v, i)));
@@ -277,7 +277,7 @@ union Sass_Value* call_fn_remove_nth(const union Sass_Value* psv_args, Sass_Func
 		int n = sass_number_get_value(psv_n);
 		int l = sass_list_get_length(psv_list);
 		if(n > 0 && n <= l) {
-			psv_ret = sass_make_list(l - 1, sass_list_get_separator(psv_list));
+			psv_ret = sass_make_list(l - 1, sass_list_get_separator(psv_list), true);
 			int i = 0;
 			int j = 0;
 			for(i = 0; i < l; i++) {
