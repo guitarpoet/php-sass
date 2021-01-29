@@ -1,17 +1,17 @@
-#PHP-SASS: A wrapper for libsass of PHP
+# PHP-SASS: A wrapper for libsass of PHP
 
-##Install
+## Install
 
 See [INSTALL](https://github.com/guitarpoet/php-sass/blob/master/INSTALL)
 
-##Play with it
+## Play with it
 
 After the install. You can just interact with the compiler using these php functions:
 
 	sass_version() // This will return the current libsass's version
 	sass_compile(string $type, string $data, array $options, string $error) //
 
-##Sass Compile
+## Sass Compile
 
 You can compile the sass file or sass string using the sass_compile function, the args are:
 
@@ -40,7 +40,7 @@ or
 
 	$result = sass_compile("file", "foo.scss", $options, $error);
 
-##Sass Options
+## Sass Options
 
 Here is the options you can have for sass compiler:
 
@@ -64,7 +64,7 @@ Here is the options you can have for sass compiler:
 - include_path
 - source_map_file
 
-##Features
+## Features
 
 1. Fully wrap for libsass
 2. Fully support the options of libsass
@@ -106,7 +106,7 @@ So, when convert back from sass, anything will be fine, but when converting php 
 
 So, php-sass use a simple solution here, only object maps to map, and array only maps to list. If you want to return an array as a map, just cast it to object, it's simple.
 
-###Sass -> PHP
+### Sass -> PHP
 
 | Sass 		| PHP 		|
 |:---------:|:---------:|
@@ -118,7 +118,7 @@ So, php-sass use a simple solution here, only object maps to map, and array only
 | list 		| array		|
 | map 		| array		|
 
-###PHP -> Sass
+### PHP -> Sass
 
 | PHP 		| Sass 				|
 |:---------:|:-----------------:|
